@@ -8,6 +8,7 @@ def test_api():
     r = client.get('/api/info')
     assert r.status_code == 200
     print('PASS: /api/info')
+    print('PASS: /api/info1')
     # multilingual
 
     # 2. Multilingual Generate with long text
@@ -15,7 +16,7 @@ def test_api():
     r2 = client.post('/api/multilingual/generate', data={'text': long_text, 'language': 'en', 'font_family': 'auto'})
     assert r2.status_code == 200
     data = r2.json()  
-    
+
     assert data['success'] is True, f"Error: {data.get('error')}"
     print(f"PASS: /api/multilingual/generate -> {data['image_url']}, font={data.get('font_family')}")
 
