@@ -1,0 +1,2839 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text_Writter — Multilingual AI Handwriting & Style Replication Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Kalam:wght@400;700&family=Caveat:wght@600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0d14;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --bg-card-hover: rgba(24, 32, 50, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.5);
+      --accent-primary: #6366f1;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(217, 70, 239, 0.08) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(16px);
+      background: rgba(10, 13, 20, 0.85);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 1rem 2rem;
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .logo-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .runtime-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success-glow);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      display: grid;
+      grid-template-columns: 520px 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1080px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      transition: border-color 0.2s;
+    }
+
+    .panel:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Engine Switcher Tabs */
+    .engine-switcher {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.3rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      gap: 0.3rem;
+    }
+
+    .engine-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      padding: 0.65rem 0.6rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .engine-tab:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .engine-tab.active {
+      background: var(--accent-gradient);
+      color: white;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* Sub-Mode Switcher (Text vs Image OCR) */
+    .input-mode-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      gap: 0.3rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .input-mode-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .input-mode-tab:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .input-mode-tab.active {
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      color: #e0e7ff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Form Groups */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    select,
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      padding: 0.75rem 1rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--border-focus);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    /* Preset Chips */
+    .presets {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
+
+    .preset-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0.3rem 0.65rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-chip:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #c7d2fe;
+    }
+
+    /* Reference Upload Dropzone */
+    .dropzone-box {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      background: rgba(99, 102, 241, 0.03);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .dropzone-box:hover,
+    .dropzone-box.dragover {
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .dropzone-icon {
+      font-size: 1.75rem;
+    }
+
+    .dropzone-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .dropzone-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    /* Active Reference Card inside Dropzone */
+    .active-ref-card {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius-sm);
+      text-align: left;
+    }
+
+    .active-ref-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #000;
+      cursor: zoom-in;
+      flex-shrink: 0;
+    }
+
+    .active-ref-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .active-ref-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .active-ref-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .active-ref-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    /* Reference Thumbnails Grid */
+    .reference-grid {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .ref-thumb-wrapper {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: #000;
+    }
+
+    .ref-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ref-remove-btn {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: rgba(239, 68, 68, 0.85);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .ref-remove-btn:hover {
+      background: #dc2626;
+    }
+
+    /* Extracted Biometric Style Card */
+    .style-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .style-card-header {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .style-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+
+    .style-metric-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      padding: 0.45rem 0.6rem;
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .style-metric-label {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+    }
+
+    .style-metric-val {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .color-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Sliders and Range Controls */
+    .range-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .range-slider {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      accent-color: var(--accent-primary);
+    }
+
+    .range-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--accent-glow);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      margin-top: 0.5rem;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Right Panel (Results) */
+    .result-container {
+      display: none;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .notebook-card {
+      background: #fdfbf7;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .notebook-card-header {
+      background: #f1ede4;
+      padding: 0.65rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .handwriting-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: zoom-in;
+    }
+
+    .transfer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .transfer-badge.same-script {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .transfer-badge.cross-script {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .action-btn.dark {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    .action-btn.dark:hover {
+      background: #e2e8f0;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      gap: 1rem;
+      color: var(--text-dim);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      opacity: 0.6;
+    }
+
+    .info-bar {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      padding: 0.65rem 0.95rem;
+      border-radius: var(--radius-sm);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Side-by-Side Comparison Grid & View Switcher */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .compare-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .compare-box-header {
+      padding: 0.6rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .compare-img {
+      width: 100%;
+      height: 480px;
+      object-fit: contain;
+      background: #0d1117;
+      cursor: zoom-in;
+    }
+
+    .view-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .view-tab {
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .view-tab.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    /* Translation Side-by-Side Layout */
+    .translation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .translation-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .trans-panel {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .trans-panel:hover {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    .trans-panel-header {
+      padding: 0.6rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .trans-panel-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .trans-panel-actions {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .trans-content-box {
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .trans-textarea {
+      width: 100%;
+      min-height: 110px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      padding: 0.65rem 0.75rem;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .trans-textarea:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px var(--border-focus);
+    }
+
+    .trans-meta-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 0.72rem;
+    }
+
+    .trans-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.4rem;
+    }
+
+    .model-pill {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+
+    .confidence-pill {
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+
+    .confidence-pill.high {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .confidence-pill.low {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .confidence-pill.unsupported {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .lang-search-box {
+      width: 100%;
+      margin-bottom: 0.35rem;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.8rem;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .lang-search-box:focus {
+      border-color: var(--accent-primary);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="nav-container">
+      <div class="logo-group">
+        <div class="logo-badge">✍️</div>
+        <div>
+          <div class="logo-title">Text_Writter Studio</div>
+          <div class="logo-subtitle">Multilingual AI Handwriting & Reference Style Replication</div>
+        </div>
+      </div>
+      <div class="runtime-badge" id="runtimeBadge">
+        <div class="status-dot"></div>
+        <span id="runtimeText">Engine: Multilingual Style Replication</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT PANEL: Controls -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span>⚙️</span> Handwriting Settings</div>
+        <span style="font-size: 0.75rem; color: var(--text-dim);">10 Languages Supported</span>
+      </div>
+
+      <!-- Engine Switcher Tabs -->
+      <div class="engine-switcher">
+        <button class="engine-tab active" id="tabMultilingual" onclick="setEngineMode('multilingual')">
+          <span>🌐</span> Multilingual AI
+        </button>
+        <button class="engine-tab" id="tabNotebook" onclick="setEngineMode('notebook')">
+          <span>📓</span> Ruled Notebook
+        </button>
+        <button class="engine-tab" id="tabNeural" onclick="setEngineMode('neural')">
+          <span>🤖</span> Neural (HWT)
+        </button>
+      </div>
+
+      <!-- MULTILINGUAL CONTROLS -->
+      <div id="multilingualControls" style="display: flex; flex-direction: column; gap: 1rem;">
+
+        <!-- Source & Target Language Selection with Search -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <!-- Source Language -->
+          <div class="form-group">
+            <label for="srcLangSelect">
+              <span>Source Language</span>
+              <span id="srcScriptBadge" style="font-size: 0.7rem; color: #a5b4fc;">Auto-Detecting</span>
+            </label>
+            <select id="srcLangSelect" onchange="onSourceLanguageChanged()">
+              <option value="auto" selected>✨ Auto-Detect (Default)</option>
+              <option value="en">English (Latin)</option>
+              <option value="hi">Hindi — हिन्दी</option>
+              <option value="ta">Tamil — தமிழ்</option>
+              <option value="te">Telugu — తెలుగు</option>
+              <option value="ml">Malayalam — മലയാളം</option>
+              <option value="kn">Kannada — ಕನ್ನಡ</option>
+              <option value="bn">Bengali — বাংলা</option>
+              <option value="gu">Gujarati — ગુજરાતી</option>
+              <option value="mr">Marathi — मराठी</option>
+              <option value="pa">Punjabi — ਪੰਜਾਬੀ</option>
+              <option value="sa">Sanskrit — संस्कृतम्</option>
+              <option value="cy">Welsh — Cymraeg</option>
+              <option value="ga">Irish — Gaeilge</option>
+              <option value="am">Amharic — አማርኛ</option>
+              <option value="sw">Swahili — Kiswahili</option>
+              <option value="bo">Tibetan — བོད་སྐད</option>
+              <option value="fr">French — Français</option>
+              <option value="de">German — Deutsch</option>
+              <option value="es">Spanish — Español</option>
+            </select>
+          </div>
+
+          <!-- Target Language -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label for="tgtLangSelect" style="margin-bottom: 0;">
+                <span>Target Language</span>
+              </label>
+              <span id="tgtCategoryBadge" style="font-size: 0.7rem; color: #34d399;">🌴 South Indian</span>
+            </div>
+            <!-- Searchable Filter Input -->
+            <input type="text" id="langSearchInput" class="lang-search-box"
+              placeholder="🔍 Search (Tamil, Welsh, Amharic...)" oninput="filterTargetLanguages()">
+            <select id="tgtLangSelect" onchange="onTargetLanguageChanged()">
+              <optgroup label="🌴 South Indian Languages">
+                <option value="ta" selected>Tamil — தமிழ் (Tamil)</option>
+                <option value="te">Telugu — తెలుగు (Telugu)</option>
+                <option value="ml">Malayalam — മലയാളം (Malayalam)</option>
+                <option value="kn">Kannada — ಕನ್ನಡ (Kannada)</option>
+                <option value="tcy">Tulu — ತುಳು (Unmodeled / Unsupported)</option>
+              </optgroup>
+              <optgroup label="🇮🇳 Indian Regional Languages">
+                <option value="hi">Hindi — हिन्दी (Devanagari)</option>
+                <option value="bn">Bengali — বাংলা (Bengali)</option>
+                <option value="gu">Gujarati — ગુજરાતી (Gujarati)</option>
+                <option value="mr">Marathi — मराठी (Devanagari)</option>
+                <option value="pa">Punjabi — ਪੰਜਾਬੀ (Gurmukhi)</option>
+                <option value="sa">Sanskrit — संस्कृतम् (Devanagari)</option>
+                <option value="ur">Urdu — اردو (Perso-Arabic RTL)</option>
+                <option value="as">Assamese — অসমীয়া (Bengali)</option>
+                <option value="or">Odia — ଓଡ଼ିଆ (Oriya)</option>
+                <option value="ne">Nepali — नेपाली (Devanagari)</option>
+              </optgroup>
+              <optgroup label="🌿 Indigenous & Low-Resource Languages">
+                <option value="mni">Manipuri (Meitei) — মৈতৈলোন্ (Bengali)</option>
+                <option value="brx">Bodo — बड़ो (Devanagari)</option>
+                <option value="doi">Dogri — डोगरी (Devanagari)</option>
+                <option value="kas">Kashmiri — कश्मीरी (Devanagari)</option>
+                <option value="sat">Santali — ᱥᱟᱱᱛᱟᱲᱤ (Ol Chiki)</option>
+                <option value="cy">Welsh — Cymraeg (Celtic Latin)</option>
+                <option value="ga">Irish — Gaeilge (Celtic Latin)</option>
+                <option value="mi">Māori — Te Reo Māori (Polynesian)</option>
+                <option value="qu">Quechua — Runasimi (Andean Latin)</option>
+                <option value="bo">Tibetan — བོད་སྐད (Tibetan)</option>
+              </optgroup>
+              <optgroup label="🌍 African Languages">
+                <option value="am">Amharic — አማርኛ (Ge'ez)</option>
+                <option value="yo">Yoruba — Èdè Yorùbá (Latin)</option>
+                <option value="sw">Swahili — Kiswahili (Bantu Latin)</option>
+                <option value="so">Somali — Soomaali (Latin)</option>
+              </optgroup>
+              <optgroup label="🏰 European Languages">
+                <option value="en">English (Latin)</option>
+                <option value="fr">French — Français (Latin)</option>
+                <option value="de">German — Deutsch (Latin)</option>
+                <option value="es">Spanish — Español (Latin)</option>
+                <option value="ru">Russian — Русский (Cyrillic)</option>
+              </optgroup>
+              <optgroup label="🌏 Other Asian Languages">
+                <option value="ja">Japanese — 日本語 (Kanji/Kana)</option>
+                <option value="zh">Chinese — 中文 (Han)</option>
+                <option value="ar">Arabic — العربية (Arabic RTL)</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <!-- Hidden legacy select for backward compatibility -->
+        <select id="multilingualSelect" style="display: none;">
+          <option value="ta" selected>ta</option>
+        </select>
+
+        <!-- NLP Model Selection -->
+        <div class="form-group">
+          <label for="translationModelSelect">
+            <span>Pretrained NLP Translation Model (Hugging Face)</span>
+            <span id="modelRouterBadge" style="font-size: 0.7rem; color: #a5b4fc;">Intelligent Routing</span>
+          </label>
+          <select id="translationModelSelect">
+            <option value="auto" selected>🤖 Auto-Route (IndicTrans2 for Indic, NLLB-200 for Low-Resource, MADLAD-400
+              for Global)</option>
+            <option value="indictrans2">🇮🇳 AI4Bharat IndicTrans2 (Specialized for 22 Indian Languages + English)
+            </option>
+            <option value="nllb200">🌐 Meta NLLB-200 (distilled-600M, 200+ Languages & Low-Resource Benchmarking)
+            </option>
+            <option value="madlad400">🧠 Google MADLAD-400 (3B-MT Multilingual Machine Translation)</option>
+          </select>
+        </div>
+
+        <!-- Font Family / Handwriting Style Selection -->
+        <div class="form-group">
+          <label for="fontFamilySelect">
+            <span>Handwriting Style / Font Family</span>
+            <span id="fontFamilyBadge" style="font-size: 0.72rem; color: #a5b4fc;">✨ Auto-Matched to Sample</span>
+          </label>
+          <select id="fontFamilySelect">
+            <option value="auto" selected>✨ Auto (Match Uploaded Sample Handwriting)</option>
+            <option value="caveat">✍️ Flowing Cursive (Caveat)</option>
+            <option value="patrick">📝 Neat Print Notes (Patrick Hand)</option>
+            <option value="indie">🌸 Casual & Rounded (Indie Flower)</option>
+            <option value="kalam">📓 Student Notebook (Kalam)</option>
+          </select>
+        </div>
+
+        <!-- Handwriting Style Reference Upload Section -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="margin-bottom: 0;">
+              <span>Handwriting Style Reference</span>
+            </label>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Photo of handwriting</span>
+          </div>
+
+          <!-- Quick Sample Reference Buttons -->
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; align-items: center;">
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Sample Presets:</span>
+            <button type="button" class="preset-chip" onclick="loadReferenceSample('cursive_blue')">✍️ Blue
+              Cursive</button>
+            <button type="button" class="preset-chip" onclick="loadReferenceSample('student_notes')">📝 Student
+              Notes</button>
+            <button type="button" class="preset-chip" onclick="loadReferenceSample('my_handwriting')">📄 Real Notebook
+              Scan</button>
+          </div>
+
+          <input type="file" id="refFileInput" accept="image/*,.jpg,.jpeg,.png,.webp,.jfif,.bmp,.gif,.tif,.tiff"
+            multiple style="display: none;" onchange="handleReferenceUpload(event)">
+
+          <!-- Dropzone with active file preview support -->
+          <div class="dropzone-box" id="dropZone" onclick="triggerFileInput(event)" ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <div id="dropzoneEmptyContent"
+              style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+              <div class="dropzone-icon">📷</div>
+              <div class="dropzone-text">Click or Drop Handwriting Samples Here</div>
+              <div class="dropzone-hint">Supports JPG, PNG, WEBP, JFIF photos (or pick a preset above)</div>
+            </div>
+            <div id="dropzoneActiveContent" style="display: none; width: 100%;"></div>
+          </div>
+
+          <!-- Additional Thumbnails Grid if multiple files uploaded -->
+          <div class="reference-grid" id="refThumbsGrid"></div>
+
+          <!-- Live Biometric Style Card -->
+          <div class="style-card" id="styleCard">
+            <div class="style-card-header">
+              <span>Extracted Style Biometrics</span>
+              <span id="styleSampleCount" style="color: var(--accent-primary);">Bundled Default</span>
+            </div>
+            <div class="style-metrics-row">
+              <div class="style-metric-chip">
+                <span class="style-metric-label">Stroke</span>
+                <span class="style-metric-val" id="metricStroke">2.4px</span>
+              </div>
+              <div class="style-metric-chip">
+                <span class="style-metric-label">Slant</span>
+                <span class="style-metric-val" id="metricSlant">-3.0°</span>
+              </div>
+              <div class="style-metric-chip">
+                <span class="style-metric-label">Ink Color</span>
+                <span class="style-metric-val" id="metricInk">
+                  <span class="color-swatch" id="inkSwatch" style="background: #183e84;"></span>
+                  <span id="inkHex">#183e84</span>
+                </span>
+              </div>
+              <div class="style-metric-chip">
+                <span class="style-metric-label">Wobble</span>
+                <span class="style-metric-val" id="metricWobble">±1.6px</span>
+              </div>
+            </div>
+            <div
+              style="margin-top: 0.35rem; padding: 0.45rem 0.65rem; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Matched Font Style:</span>
+              <span id="metricFontFam" style="font-size: 0.78rem; font-weight: 700; color: #a5b4fc;">Flowing Cursive
+                (Caveat)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generation Fine-Tuning Settings -->
+        <div class="form-group">
+          <label>Fine-Tuning & Paper Controls</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+            <div>
+              <label style="font-size: 0.75rem;">Paper Background</label>
+              <select id="multiPaperSelect">
+                <option value="ruled" selected>📓 Ruled Notebook Copy</option>
+                <option value="blank">📝 Clean Plain Paper</option>
+                <option value="grid">📐 Math Grid Paper</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem;">Pen Ink</label>
+              <select id="multiInkSelect">
+                <option value="auto" selected>✨ From Reference Photo</option>
+                <option value="#183e84">🔵 Classic Blue Pen</option>
+                <option value="#1a1c20">⚫ Black Gel Pen</option>
+                <option value="#0f2655">🌌 Dark Navy Ink</option>
+                <option value="#b91e28">🔴 Red Marking Pen</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Slant Tilt Slider -->
+          <div style="margin-top: 0.4rem;">
+            <label style="font-size: 0.75rem;">
+              <span>Slant Adjustment</span>
+              <span id="slantVal" class="range-value">Auto</span>
+            </label>
+            <div class="range-group">
+              <input type="range" id="slantSlider" class="range-slider" min="-25" max="25" step="1" value="0"
+                oninput="document.getElementById('slantVal').innerText = this.value + '°'">
+            </div>
+          </div>
+
+          <!-- Stroke Weight Slider -->
+          <div style="margin-top: 0.4rem;">
+            <label style="font-size: 0.75rem;">
+              <span>Stroke Thickness</span>
+              <span id="strokeVal" class="range-value">Auto</span>
+            </label>
+            <div class="range-group">
+              <input type="range" id="strokeSlider" class="range-slider" min="1.5" max="5.5" step="0.1" value="2.8"
+                oninput="document.getElementById('strokeVal').innerText = this.value + 'px'">
+            </div>
+          </div>
+
+          <!-- Handwriting Size Slider -->
+          <div style="margin-top: 0.4rem;">
+            <label style="font-size: 0.75rem;">
+              <span>Handwriting Size</span>
+              <span id="fontSizeVal" class="range-value">36px</span>
+            </label>
+            <div class="range-group">
+              <input type="range" id="fontSizeSlider" class="range-slider" min="24" max="52" step="2" value="36"
+                oninput="document.getElementById('fontSizeVal').innerText = this.value + 'px'">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LEGACY NOTEBOOK CONTROLS (Preserved) -->
+      <div id="notebookControls" style="display: none; flex-direction: column; gap: 0.85rem;">
+        <div class="form-group">
+          <label for="styleSelect">Handwriting Style</label>
+          <select id="styleSelect">
+            <option value="kalam" selected>Kalam (Student Notebook)</option>
+            <option value="caveat">Caveat (Flowing Cursive)</option>
+            <option value="indie">Indie Flower (Casual Hand)</option>
+            <option value="patrick">Patrick Hand (Neat Notes)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inkSelect">Pen & Ink Color</label>
+          <select id="inkSelect">
+            <option value="blue" selected>🔵 Classic Blue Ballpoint Pen</option>
+            <option value="black">⚫ Black Gel Pen</option>
+            <option value="darkblue">🌌 Dark Blue (Pilot Pen)</option>
+            <option value="red">🔴 Red Marking Pen</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="paperSelect">Paper Type</label>
+          <select id="paperSelect">
+            <option value="ruled" selected>📓 Ruled Notebook ('Copy with Blue Lines & Red Margin')</option>
+            <option value="blank">📝 Clean Plain Paper</option>
+            <option value="grid">📐 Math Grid Paper</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- LEGACY NEURAL ENGINE CONTROLS (Preserved) -->
+      <div id="neuralControls" style="display: none; flex-direction: column; gap: 0.75rem;">
+        <div class="info-bar" style="color: var(--warning);">
+          ⚠️ Neural HWT runs on CPU and takes ~40s per line. Use Google Colab GPU for One-DM.
+        </div>
+        <div class="form-group">
+          <label for="neuralEngineSelect">Model Engine</label>
+          <select id="neuralEngineSelect">
+            <option value="hwt" selected>HWT (CPU Transformer)</option>
+            <option value="onedm">One-DM (CUDA GPU required)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="neuralTargetLangSelect">
+            <span>Output Language (Translate Before HWT)</span>
+            <span id="neuralTargetLangBadge" style="font-size: 0.7rem; color: #34d399;">Auto-Synced</span>
+          </label>
+          <select id="neuralTargetLangSelect" onchange="onNeuralTargetLangChanged()">
+            <option value="auto" selected>✨ Same as Input Text (No Translation)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Text Input & Presets -->
+      <div class="form-group" style="margin-top: 0.75rem;">
+        <!-- Input Mode Switcher (Type / Edit vs Extract from Image OCR) -->
+        <div class="input-mode-switcher">
+          <button type="button" class="input-mode-tab active" id="tabModeText" onclick="setInputMode('text')">
+            <span>✍️</span> Type / Edit Text
+          </button>
+          <button type="button" class="input-mode-tab" id="tabModeOcr" onclick="setInputMode('ocr')">
+            <span>📷</span> Extract from Image (OCR)
+          </button>
+        </div>
+
+        <!-- Image OCR Extraction Panel (Active in OCR Mode) -->
+        <div id="ocrSection" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 0.65rem;">
+          <input type="file" id="ocrFileInput" accept="image/*,.jpg,.jpeg,.png,.webp,.jfif,.bmp,.tif,.tiff"
+            style="display: none;" onchange="handleOcrFileSelect(event)">
+
+          <div class="dropzone-box" id="ocrDropZone" onclick="triggerOcrFileInput(event)"
+            ondragover="handleOcrDragOver(event)" ondragleave="handleOcrDragLeave(event)" ondrop="handleOcrDrop(event)"
+            style="padding: 1.1rem 0.85rem;">
+            <div id="ocrDropEmpty" style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+              <div class="dropzone-icon">📷</div>
+              <div class="dropzone-text">Click or Drop Image Here for OCR</div>
+              <div class="dropzone-hint">Supports JPG, PNG, WEBP (Handwritten or Printed Notes, Books, Documents)</div>
+            </div>
+            <div id="ocrDropActive" style="display: none; width: 100%;">
+              <div class="active-ref-card">
+                <img id="ocrPreviewImg" class="active-ref-thumb" style="width: 64px; height: 64px; object-fit: cover;"
+                  onclick="openFullscreenImg(this)">
+                <div class="active-ref-info">
+                  <div id="ocrFileName"
+                    style="font-weight: 600; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main);">
+                    document.png</div>
+                  <div id="ocrFileSize" style="font-size: 0.72rem; color: var(--text-dim);">128 KB</div>
+                  <div style="margin-top: 0.35rem; display: flex; gap: 0.4rem;">
+                    <button type="button" class="action-btn dark" onclick="triggerOcrFileInput(event)"
+                      style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">🔄 Replace</button>
+                    <button type="button" class="action-btn dark" onclick="clearOcrImage(event)"
+                      style="padding: 0.2rem 0.5rem; font-size: 0.7rem; color: var(--error);">✕ Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+            <label for="ocrLangSelect" style="font-size: 0.75rem; white-space: nowrap; margin-bottom: 0;">Language
+              Hint:</label>
+            <select id="ocrLangSelect" style="flex: 1; padding: 0.35rem 0.6rem; font-size: 0.78rem;">
+              <option value="auto" selected>✨ Auto-Detect (All Languages & Scripts)</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="hi">🇮🇳 Hindi (हिन्दी)</option>
+              <option value="gu">🇮🇳 Gujarati (ગુજરાતી)</option>
+              <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+              <option value="te">🇮🇳 Telugu (తెలుగు)</option>
+              <option value="kn">🇮🇳 Kannada (ಕನ್ನಡ)</option>
+              <option value="ml">🇮🇳 Malayalam (മലയാളം)</option>
+              <option value="mr">🇮🇳 Marathi (मराठी)</option>
+              <option value="bn">🇮🇳 Bengali (বাংলা)</option>
+              <option value="pa">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
+              <option value="cy">🏴󠁧󠁢󠁷󠁬󠁳󠁿 Welsh (Cymraeg)</option>
+            </select>
+          </div>
+
+          <button type="button" class="action-btn" id="ocrExtractBtn" onclick="performOcrExtraction()"
+            style="width: 100%; padding: 0.65rem 1rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.24) 0%, rgba(5, 150, 105, 0.24) 100%); border: 1px solid rgba(16, 185, 129, 0.5); color: #a7f3d0; font-weight: 700; font-size: 0.88rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;">
+            <div class="spinner" id="ocrSpinner" style="display: none; width: 14px; height: 14px; border-width: 2px;">
+            </div>
+            <span id="ocrBtnText">🔍 Extract Text from Image (OCR)</span>
+          </button>
+
+          <!-- OCR Status / Summary Banner -->
+          <div id="ocrStatusBanner"
+            style="display: none; padding: 0.5rem 0.75rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); font-size: 0.78rem; justify-content: space-between; align-items: center;">
+            <div style="color: #6ee7b7; display: flex; align-items: center; gap: 0.4rem;">
+              <span>✓</span>
+              <span id="ocrStatusMsg">Extracted 28 words</span>
+            </div>
+            <div style="display: flex; gap: 0.4rem;">
+              <button type="button" class="action-btn dark" onclick="copyOcrExtractedText()"
+                style="padding: 0.2rem 0.45rem; font-size: 0.7rem;">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <label for="promptText">
+          <span id="promptLabelText">Content to Write & Translate</span>
+          <span id="charCount" style="font-size: 0.75rem; color: var(--text-dim);">0 chars</span>
+        </label>
+        <textarea id="promptText" oninput="onTextInput()"
+          placeholder="Enter content in English, Gujarati, Hindi, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Punjabi, Welsh, etc.">The quick brown fox jumps over the lazy dog. Education is the most powerful weapon which you can use to change the world.</textarea>
+
+        <!-- Sample Presets -->
+        <div class="presets">
+          <span class="preset-chip" onclick="loadSampleText('en')">🇬🇧 English</span>
+          <span class="preset-chip" onclick="loadSampleText('gu')">🇮🇳 Gujarati</span>
+          <span class="preset-chip" onclick="loadSampleText('hi')">🇮🇳 Hindi</span>
+          <span class="preset-chip" onclick="loadSampleText('ta')">🇮🇳 Tamil</span>
+          <span class="preset-chip" onclick="loadSampleText('te')">🇮🇳 Telugu</span>
+          <span class="preset-chip" onclick="loadSampleText('kn')">🇮🇳 Kannada</span>
+          <span class="preset-chip" onclick="loadSampleText('ml')">🇮🇳 Malayalam</span>
+          <span class="preset-chip" onclick="loadSampleText('mr')">🇮🇳 Marathi</span>
+          <span class="preset-chip" onclick="loadSampleText('bn')">🇮🇳 Bengali</span>
+          <span class="preset-chip" onclick="loadSampleText('pa')">🇮🇳 Punjabi</span>
+        </div>
+      </div>
+
+      <!-- Translate Action Button (Active in Multilingual Mode) -->
+      <div id="translateActionRow" style="margin-top: 0.35rem;">
+        <button type="button" class="action-btn" id="translateBtn" onclick="performTranslation()"
+          style="width: 100%; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.28) 0%, rgba(139, 92, 246, 0.28) 100%); border: 1px solid rgba(99, 102, 241, 0.5); color: #e0e7ff; font-weight: 700; font-size: 0.92rem; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);">
+          <div class="spinner" id="transSpinner" style="display: none; width: 15px; height: 15px; border-width: 2px;">
+          </div>
+          <span id="transBtnText">🌐 Translate Content (AI NLP)</span>
+        </button>
+      </div>
+
+      <!-- Side-by-Side Translation Interface -->
+      <div id="translationSideBySideContainer" class="translation-grid" style="display: none; margin-top: 0.75rem;">
+        <!-- Left Panel: Original Content -->
+        <div class="trans-panel">
+          <div class="trans-panel-header">
+            <div class="trans-panel-title">
+              <span>📝 Original Content</span>
+              <span class="model-pill" id="sourceLangBadge">English (Detected)</span>
+            </div>
+            <div class="trans-panel-actions">
+              <button type="button" class="action-btn dark" onclick="swapTranslationLanguages()" title="Swap Languages"
+                style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">⇄ Swap</button>
+              <button type="button" class="action-btn dark" onclick="copyOriginalText()"
+                style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">📋 Copy</button>
+            </div>
+          </div>
+          <div class="trans-content-box">
+            <textarea id="originalDisplayBox" readonly class="trans-textarea"
+              style="background: rgba(0, 0, 0, 0.4); color: #cbd5e1;"></textarea>
+            <div class="trans-footer">
+              <span id="origCharCount">0 chars</span>
+              <span id="detectedScriptNote" style="color: #a5b4fc;">Latin Script</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: AI Translated Content -->
+        <div class="trans-panel">
+          <div class="trans-panel-header">
+            <div class="trans-panel-title">
+              <span>✨ AI Translated Content</span>
+              <span class="model-pill" id="targetLangBadge">Gujarati — ગુજરાતી</span>
+            </div>
+            <div class="trans-panel-actions">
+              <button type="button" class="action-btn dark" onclick="regenerateTranslation()"
+                title="Regenerate Translation" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">🔄 Regenerate</button>
+              <button type="button" class="action-btn dark" onclick="copyTranslatedText()"
+                style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">📋 Copy</button>
+            </div>
+          </div>
+          <div class="trans-content-box">
+            <textarea id="translatedText" class="trans-textarea" oninput="onTranslatedTextInput()"
+              placeholder="Translated text will appear here (editable)..."></textarea>
+            <div class="trans-meta-row">
+              <span class="model-pill" id="transModelBadge">AI4Bharat IndicTrans2</span>
+              <span class="confidence-pill high" id="transConfidenceBadge">High confidence</span>
+            </div>
+            <div class="trans-footer">
+              <span id="transCharCount">0 chars</span>
+              <span id="transTimeBadge" style="color: var(--text-dim);">⚡ 0.2s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Single Primary Action Button -->
+      <button class="submit-btn" id="generateBtn" onclick="renderHandwritingOnPage()"
+        style="margin-top: 1rem; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); font-weight: 700; box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">✍️ Render Handwritten Translation on Notebook Page</span>
+      </button>
+    </div>
+
+    <!-- RIGHT PANEL: Result -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span>📖</span> Handwriting Preview</div>
+        <span style="font-size: 0.75rem; color: var(--text-dim);" id="elapsedTime">Ready</span>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🖋️</div>
+        <h3>No Page Rendered Yet</h3>
+        <p style="font-size: 0.85rem; max-width: 360px;">
+          Upload a sample handwriting photo or use the default style, choose any of the 10 supported languages, and
+          click <b>Synthesize</b> to generate authentic handwriting.
+        </p>
+      </div>
+
+      <!-- Results View -->
+      <div class="result-container" id="resultContainer">
+        <!-- Transfer Mode & Quality Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div id="transferModeBadge" class="transfer-badge same-script">
+            <span>✨</span> Same-Script Replication
+          </div>
+          <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+            <div id="accuracyBadge" class="transfer-badge same-script"
+              style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+              ✓ 100% Text Accuracy
+            </div>
+            <div id="styleSimBadge" class="transfer-badge same-script"
+              style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc;">
+              🎯 92% Style Similarity
+            </div>
+          </div>
+        </div>
+
+        <!-- View Switcher Tabs -->
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div class="view-tabs">
+            <button class="view-tab active" id="btnViewSplit" onclick="switchResultView('split')">
+              📖 Side-by-Side Comparison
+            </button>
+            <button class="view-tab" id="btnViewSingle" onclick="switchResultView('single')">
+              📄 Full Generated Page
+            </button>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--text-dim);" id="viewHint">Comparing reference handwriting with
+            generated copy</span>
+        </div>
+
+        <!-- Transfer Explanation Note -->
+        <div class="info-bar" id="transferNotesBar" style="font-size: 0.75rem; line-height: 1.4;">
+          Style replication complete.
+        </div>
+
+        <!-- Side-by-Side Split View Container -->
+        <div class="comparison-grid" id="splitViewContainer">
+          <!-- Left: Target Reference Handwriting -->
+          <div class="compare-box">
+            <div class="compare-box-header">
+              <span>📷 Reference Handwriting</span>
+              <span id="refMeta" style="font-size: 0.7rem; color: #a5b4fc;">Target Style</span>
+            </div>
+            <img id="referenceImg" class="compare-img" src="" alt="Reference Handwriting"
+              onclick="openFullscreenImg(this)">
+          </div>
+          <!-- Right: Generated Handwriting -->
+          <div class="compare-box">
+            <div class="compare-box-header">
+              <span>✍️ Generated Copy</span>
+              <div style="display: flex; gap: 0.35rem;">
+                <a class="action-btn dark" id="downloadBtnSplit" download="handwritten_page.png" target="_blank"
+                  style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">⬇ PNG</a>
+                <a class="action-btn dark" id="openFullBtnSplit" target="_blank"
+                  style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">🔍 Zoom</a>
+              </div>
+            </div>
+            <img id="generatedImgSplit" class="compare-img" src="" alt="Generated Handwriting"
+              onclick="openFullscreenImg(this)">
+          </div>
+        </div>
+
+        <!-- Single Full View Container -->
+        <div class="notebook-card" id="singleViewContainer" style="display: none;">
+          <div class="notebook-card-header">
+            <span id="cardMeta">STUDENT NOTEBOOK COPY (A4)</span>
+            <div style="display: flex; gap: 0.5rem;">
+              <a class="action-btn dark" id="downloadBtn" download="handwritten_page.png" target="_blank">⬇ Download
+                PNG</a>
+              <a class="action-btn dark" id="openFullBtn" target="_blank">🔍 Full Screen</a>
+            </div>
+          </div>
+          <img id="generatedImg" class="handwriting-img" src="" alt="Handwritten Page" onclick="openFullscreen()">
+        </div>
+
+        <div class="info-bar" id="resultInfoBar">
+          <span id="speedStat">⚡ Rendered in 0.08s</span>
+          <span>•</span>
+          <span id="langStat">Language: Hindi</span>
+          <span>•</span>
+          <span id="strokeStat">Pen: 2.8px</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentEngine = 'multilingual';
+    let uploadedReferenceFiles = [];
+    let lastUploadedReferenceFilename = null;
+    let lastUploadedReferenceUrl = null;
+    let currentExtractedProfile = null;
+    let languagePresets = {};
+    let activeResultView = 'split';
+    let lastDetectedLang = 'en';
+    let lastTranslatedSourceText = '';
+    let lastTranslatedTargetLang = '';
+    let promptEditedInMultilingual = false;
+    let targetLangExplicitlyChanged = false;
+    let isInitialTextLoad = true;
+
+    function populateNeuralTargetLanguages() {
+      const src = document.getElementById('tgtLangSelect');
+      const dst = document.getElementById('neuralTargetLangSelect');
+      if (!src || !dst) return;
+      // Clone optgroups/options after the default 'auto' option
+      while (dst.options.length > 1) dst.remove(1);
+      Array.from(src.children).forEach(child => {
+        const clone = child.cloneNode(true);
+        if (clone.tagName === 'OPTGROUP') {
+          Array.from(clone.querySelectorAll('option')).forEach(o => { o.selected = false; });
+        } else {
+          clone.selected = false;
+        }
+        dst.appendChild(clone);
+      });
+    }
+    populateNeuralTargetLanguages();
+
+    // Load available languages from API
+    async function loadLanguages() {
+      try {
+        const res = await fetch('/api/multilingual/languages');
+        const list = await res.json();
+        list.forEach(l => {
+          languagePresets[l.code] = {
+            name: l.name,
+            script: l.script,
+            short: l.sample_short,
+            long: l.sample_long
+          };
+        });
+      } catch (e) {
+        console.warn('Could not load languages list:', e);
+      }
+    }
+    loadLanguages();
+    loadReferenceSample('cursive_blue');
+
+    // Mode Switcher
+    function setEngineMode(mode) {
+      const prevEngine = currentEngine;
+      currentEngine = mode;
+      document.getElementById('tabMultilingual').classList.toggle('active', mode === 'multilingual');
+      document.getElementById('tabNotebook').classList.toggle('active', mode === 'notebook');
+      document.getElementById('tabNeural').classList.toggle('active', mode === 'neural');
+
+      document.getElementById('multilingualControls').style.display = mode === 'multilingual' ? 'flex' : 'none';
+      document.getElementById('notebookControls').style.display = mode === 'notebook' ? 'flex' : 'none';
+      document.getElementById('neuralControls').style.display = mode === 'neural' ? 'flex' : 'none';
+
+      const tgtVal = document.getElementById('tgtLangSelect') ? document.getElementById('tgtLangSelect').value : 'ta';
+      const origText = promptText ? promptText.value.trim() : '';
+      const transEl = document.getElementById('translatedText');
+      const hasMatchingTranslation = !!(
+        transEl && transEl.value.trim() &&
+        lastTranslatedSourceText === origText &&
+        lastTranslatedTargetLang === tgtVal
+      );
+
+      if (mode === 'neural' && prevEngine === 'multilingual') {
+        const neuralTgtSelect = document.getElementById('neuralTargetLangSelect');
+        if (neuralTgtSelect && (hasMatchingTranslation || targetLangExplicitlyChanged || promptEditedInMultilingual)) {
+          if (neuralTgtSelect.querySelector(`option[value="${tgtVal}"]`)) {
+            neuralTgtSelect.value = tgtVal;
+          }
+        }
+      }
+
+      const transRow = document.getElementById('translateActionRow');
+      if (transRow) transRow.style.display = mode === 'multilingual' ? 'block' : 'none';
+
+      const transBox = document.getElementById('translationSideBySideContainer');
+      if (transBox) {
+        if (mode === 'multilingual') {
+          if (hasMatchingTranslation) transBox.style.display = 'grid';
+        } else {
+          transBox.style.display = hasMatchingTranslation ? 'grid' : 'none';
+        }
+      }
+
+      const btnText = document.getElementById('btnText');
+      if (mode === 'multilingual') {
+        btnText.innerText = '✍️ Render Handwritten Translation on Notebook Page';
+      } else if (mode === 'notebook') {
+        btnText.innerText = '✨ Render Ruled Notebook Copy';
+      } else {
+        btnText.innerText = '⚡ Run Neural Model';
+      }
+    }
+
+    // Char counter & auto detection
+    const promptText = document.getElementById('promptText');
+    let detectTimeout = null;
+
+    function onTextInput() {
+      const text = promptText.value;
+      document.getElementById('charCount').innerText = `${text.length} chars`;
+      if (!isInitialTextLoad && currentEngine === 'multilingual') {
+        promptEditedInMultilingual = true;
+      }
+
+      clearTimeout(detectTimeout);
+      detectTimeout = setTimeout(() => {
+        detectScript(text);
+      }, 300);
+    }
+    onTextInput();
+    isInitialTextLoad = false;
+
+    async function detectScript(text) {
+      if (!text || !text.trim()) return;
+      try {
+        const fd = new FormData();
+        fd.append('text', text);
+        const res = await fetch('/api/multilingual/detect', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data && data.primary_script) {
+          if (data.primary_language) {
+            lastDetectedLang = data.primary_language;
+          }
+          const badge = document.getElementById('scriptBadge');
+          if (badge) {
+            badge.innerText = `Detected: ${data.primary_script} (${data.primary_language.toUpperCase()})`;
+            badge.style.color = data.is_valid ? '#34d399' : '#f59e0b';
+          }
+          const srcBadge = document.getElementById('srcScriptBadge');
+          if (srcBadge && document.getElementById('srcLangSelect').value === 'auto') {
+            srcBadge.innerText = `${data.primary_language.toUpperCase()} (${data.primary_script})`;
+          }
+        }
+      } catch (e) {
+        console.warn('Detection failed:', e);
+      }
+    }
+
+    function onLanguageChanged() {
+      const lang = document.getElementById('multilingualSelect').value;
+      if (lang !== 'auto' && languagePresets[lang]) {
+        const sb = document.getElementById('scriptBadge');
+        if (sb) sb.innerText = `Script: ${languagePresets[lang].script}`;
+      } else {
+        onTextInput();
+      }
+    }
+
+    function loadSampleText(code) {
+      const sampleMap = {
+        'en': 'The quick brown fox jumps over the lazy dog. Education is the most powerful weapon which you can use to change the world.',
+        'gu': 'સત્ય અને અહિંસા જીવનના સર્વોચ્ચ મૂલ્યો છે. પરિશ્રમ જ સફળતાની ખરી ચાવી છે.',
+        'hi': 'सत्य और अहिंसा ही मानव जीवन के सर्वोच्च आदर्श हैं। कठिन परिश्रम और अनुशासन से ही प्रत्येक लक्ष्य प्राप्त होता है।',
+        'ta': 'கல்வி என்பது உலகை மாற்ற நீங்கள் பயன்படுத்தக்கூடிய மிக சக்திவாய்ந்த ஆயுதம் ஆகும்.',
+        'te': 'జ్ఞానము మరియు సత్యము మానవ ప్రగತಿకి మూలాಧారాలు. నిరంతర శ్రమ ద్వారా మాత్రమే విజయము సాధించవచ్చు.',
+        'kn': 'ಜ್ಞಾನ ಮತ್ತು ಸತ್ಯವೇ ಮನುಕುಲದ ನಿಜವಾದ ಸಂಪತ್ತು. ಕಠಿಣ ಪರಿಶ್ರಮದಿಂದ ಮಾತ್ರವೇ ಯಶಸ್ಸು ಸಾಧ್ಯ.',
+        'ml': 'അറിവും സത്യവുമാണ് മനുഷ്യ പുരോഗതിയുടെ അടിസ്ഥാനം. ആത്മാർത്ഥമായ പരിശ്രമത്തിലൂടെ വിജയം കൈവരിക്കാം.',
+        'mr': 'ध्येय साध्य करण्यासाठी कठोर परिश्रम आणि निरंतर प्रयत्नांची आवश्यकता असते.',
+        'bn': 'আমার নাম ভারত এবং আমি একজন ছাত্র। চিত্ত যেথা ভয়শূন্য, উচ্চ যেথা শির।',
+        'pa': 'ਸੱਚ ਅਤੇ ਮਿਹਨਤ ਹੀ ਸਫਲਤਾ ਦਾ ਮੂਲ ਮੰਤਰ ਹਨ। ਸਦਾ ਨੇਕ ਕੰਮ ਕਰੋ।',
+      };
+      if (sampleMap[code]) {
+        promptText.value = sampleMap[code];
+        onTextInput();
+      }
+    }
+
+    function loadSample(code) {
+      loadSampleText(code);
+    }
+
+    function triggerFileInput(e) {
+      if (e.target.closest('button') || e.target.closest('a')) return;
+      document.getElementById('refFileInput').click();
+    }
+
+    // Drag and Drop & Reference Upload Handling
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').classList.remove('dragover');
+      if (e.dataTransfer && e.dataTransfer.files) {
+        addReferenceFiles(Array.from(e.dataTransfer.files));
+      }
+    }
+
+    function handleReferenceUpload(e) {
+      if (e.target.files && e.target.files.length) {
+        addReferenceFiles(Array.from(e.target.files));
+        e.target.value = '';
+      }
+    }
+
+    async function loadReferenceSample(sampleId) {
+      try {
+        const fd = new FormData();
+        fd.append('sample_id', sampleId);
+        const res = await fetch('/api/multilingual/load-sample-reference', { method: 'POST', body: fd });
+        if (!res.ok) {
+          console.warn('Could not load sample reference:', res.status);
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          lastUploadedReferenceFilename = data.filename;
+          lastUploadedReferenceUrl = data.preview_url;
+          currentExtractedProfile = data.profile;
+          uploadedReferenceFiles = []; // using saved server-side reference
+
+          const nameMap = {
+            'cursive_blue': 'sample_cursive_blue.webp (Cursive Blue)',
+            'student_notes': 'sample_student_notes.jpeg (Student Notes)',
+            'my_handwriting': 'my_handwriting.png (Notebook Scan)'
+          };
+
+          showActiveReferenceCard({
+            name: nameMap[sampleId] || data.filename,
+            url: data.preview_url,
+            badge: 'Preset Sample Active',
+            sizeText: data.summary ? `${data.summary.stroke_width}px stroke` : 'Ready'
+          });
+
+          updateStyleCardFromProfile(data.profile, data.summary, 'Preset Sample');
+
+          const refImg = document.getElementById('referenceImg');
+          if (refImg) {
+            refImg.src = data.preview_url;
+            refImg.style.display = 'block';
+            document.getElementById('refMeta').innerText = nameMap[sampleId] || data.filename;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load sample reference:', err);
+      }
+    }
+
+    function addReferenceFiles(files) {
+      const validFiles = files.filter(f => f.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|jfif|bmp|gif|tif|tiff)$/i.test(f.name));
+      if (!validFiles.length) {
+        alert('Please select a valid handwriting image file (JPG, PNG, WEBP, etc.)');
+        return;
+      }
+
+      uploadedReferenceFiles = validFiles;
+
+      // Show the primary reference preview immediately inside the dropzone
+      const primary = validFiles[0];
+      const previewUrl = URL.createObjectURL(primary);
+      const sizeStr = (primary.size / 1024).toFixed(1) + ' KB';
+      showActiveReferenceCard({
+        name: primary.name,
+        url: previewUrl,
+        badge: '✓ Reference Loaded',
+        sizeText: sizeStr
+      });
+
+      renderReferenceThumbnails();
+      analyzeReferences();
+    }
+
+    function showActiveReferenceCard(info) {
+      const dropEmpty = document.getElementById('dropzoneEmptyContent');
+      const dropActive = document.getElementById('dropzoneActiveContent');
+      dropEmpty.style.display = 'none';
+      dropActive.style.display = 'block';
+
+      dropActive.innerHTML = `
+        <div class="active-ref-card">
+          <img src="${info.url}" class="active-ref-thumb" alt="Reference Sample" onclick="event.stopPropagation(); window.open('${info.url}', '_blank');">
+          <div class="active-ref-info">
+            <div class="active-ref-name" title="${info.name}">📄 ${info.name}</div>
+            <div class="active-ref-badge">
+              <span>●</span>
+              <span>${info.badge} (${info.sizeText})</span>
+            </div>
+          </div>
+          <div class="active-ref-actions" onclick="event.stopPropagation();">
+            <button type="button" class="action-btn dark" style="font-size: 0.72rem; padding: 0.35rem 0.65rem;" onclick="document.getElementById('refFileInput').click()">🔄 Change</button>
+            <button type="button" class="action-btn dark" style="font-size: 0.72rem; padding: 0.35rem 0.5rem; color: #ef4444;" onclick="clearActiveReference()">✕ Clear</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function clearActiveReference() {
+      uploadedReferenceFiles = [];
+      lastUploadedReferenceFilename = null;
+      lastUploadedReferenceUrl = null;
+      document.getElementById('dropzoneEmptyContent').style.display = 'flex';
+      document.getElementById('dropzoneActiveContent').style.display = 'none';
+      document.getElementById('refThumbsGrid').innerHTML = '';
+      resetStyleCard();
+      const refImg = document.getElementById('referenceImg');
+      if (refImg) refImg.style.display = 'none';
+    }
+
+    function removeReference(idx) {
+      uploadedReferenceFiles.splice(idx, 1);
+      renderReferenceThumbnails();
+      if (uploadedReferenceFiles.length > 0) {
+        analyzeReferences();
+      } else {
+        clearActiveReference();
+      }
+    }
+
+    function renderReferenceThumbnails() {
+      const grid = document.getElementById('refThumbsGrid');
+      grid.innerHTML = '';
+      if (uploadedReferenceFiles.length <= 1) return; // single image is shown in dropzone
+      uploadedReferenceFiles.slice(1).forEach((file, idx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'ref-thumb-wrapper';
+
+        const img = document.createElement('img');
+        img.className = 'ref-thumb-img';
+        img.src = URL.createObjectURL(file);
+
+        const rm = document.createElement('button');
+        rm.className = 'ref-remove-btn';
+        rm.innerHTML = '✕';
+        rm.onclick = (e) => {
+          e.stopPropagation();
+          removeReference(idx + 1);
+        };
+
+        wrap.appendChild(img);
+        wrap.appendChild(rm);
+        grid.appendChild(wrap);
+      });
+    }
+
+    function updateStyleCardFromProfile(profile, summary, sourceLabel) {
+      if (!profile || !summary) return;
+      document.getElementById('styleSampleCount').innerText = sourceLabel || 'Analyzed Sample';
+      document.getElementById('metricStroke').innerText = `${summary.stroke_width}px`;
+      document.getElementById('metricSlant').innerText = `${summary.slant_angle}°`;
+      document.getElementById('inkHex').innerText = summary.ink_hex;
+      document.getElementById('inkSwatch').style.background = summary.ink_hex;
+      document.getElementById('metricWobble').innerText = `±${summary.baseline_wobble}px`;
+      if (summary.font_family_name) {
+        const mf = document.getElementById('metricFontFam');
+        if (mf) mf.innerText = summary.font_family_name;
+        const fb = document.getElementById('fontFamilyBadge');
+        if (fb) fb.innerText = `Matched: ${summary.font_family_name}`;
+      }
+      if (summary.font_family) {
+        const styleSelect = document.getElementById('styleSelect');
+        if (styleSelect && styleSelect.querySelector(`option[value="${summary.font_family}"]`)) {
+          styleSelect.value = summary.font_family;
+        }
+      }
+      // Sync sliders
+      document.getElementById('strokeSlider').value = summary.stroke_width;
+      document.getElementById('strokeVal').innerText = `${summary.stroke_width}px`;
+      document.getElementById('slantSlider').value = summary.slant_angle;
+      document.getElementById('slantVal').innerText = `${summary.slant_angle}°`;
+    }
+
+    async function analyzeReferences() {
+      if (!uploadedReferenceFiles.length) return;
+      const fd = new FormData();
+      uploadedReferenceFiles.forEach(f => fd.append('files', f));
+
+      try {
+        const res = await fetch('/api/multilingual/analyze-style', { method: 'POST', body: fd });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.warn('Style analysis error (' + res.status + '):', errText);
+          return;
+        }
+        const data = await res.json();
+        if (data.success && data.summary) {
+          currentExtractedProfile = data.profile;
+          if (data.filenames && data.filenames.length > 0) {
+            lastUploadedReferenceFilename = data.filenames[0];
+          }
+          if (data.preview_urls && data.preview_urls.length > 0) {
+            lastUploadedReferenceUrl = data.preview_urls[0];
+            const refImg = document.getElementById('referenceImg');
+            if (refImg) {
+              refImg.src = lastUploadedReferenceUrl;
+              refImg.style.display = 'block';
+              document.getElementById('refMeta').innerText = lastUploadedReferenceFilename;
+            }
+          }
+          updateStyleCardFromProfile(data.profile, data.summary, `${data.sample_count} Photo(s) Analyzed`);
+        }
+      } catch (e) {
+        console.warn('Style analysis failed:', e);
+      }
+    }
+
+    function onFontFamilyChanged() {
+      const sel = document.getElementById('fontFamilySelect');
+      const badge = document.getElementById('fontFamilyBadge');
+      if (sel.value === 'auto') {
+        badge.innerText = (currentExtractedProfile && currentExtractedProfile.font_family_name)
+          ? `Matched: ${currentExtractedProfile.font_family_name}`
+          : '✨ Auto-Matched to Sample';
+      } else {
+        badge.innerText = 'Manual Selection Active';
+      }
+    }
+
+    function resetStyleCard() {
+      currentExtractedProfile = null;
+      document.getElementById('styleSampleCount').innerText = 'Bundled Default';
+      document.getElementById('metricStroke').innerText = '2.4px';
+      document.getElementById('metricSlant').innerText = '-3.0°';
+      document.getElementById('inkHex').innerText = '#183e84';
+      document.getElementById('inkSwatch').style.background = '#183e84';
+      document.getElementById('metricWobble').innerText = '±1.6px';
+      const mf = document.getElementById('metricFontFam');
+      if (mf) mf.innerText = 'Flowing Cursive (Caveat)';
+      const fb = document.getElementById('fontFamilyBadge');
+      if (fb) fb.innerText = '✨ Auto-Matched to Sample';
+      document.getElementById('strokeVal').innerText = 'Auto';
+      document.getElementById('slantVal').innerText = 'Auto';
+    }
+
+    // Filter Target Languages by search query
+    function filterTargetLanguages() {
+      const q = document.getElementById('langSearchInput').value.toLowerCase().trim();
+      const select = document.getElementById('tgtLangSelect');
+      const optgroups = select.getElementsByTagName('optgroup');
+
+      for (let og of optgroups) {
+        let hasVisible = false;
+        const options = og.getElementsByTagName('option');
+        for (let opt of options) {
+          const text = opt.innerText.toLowerCase();
+          const val = opt.value.toLowerCase();
+          const match = text.includes(q) || val.includes(q);
+          opt.style.display = match ? '' : 'none';
+          if (match) hasVisible = true;
+        }
+        og.style.display = hasVisible ? '' : 'none';
+      }
+    }
+
+    function onSourceLanguageChanged() {
+      const srcVal = document.getElementById('srcLangSelect').value;
+      const badge = document.getElementById('srcScriptBadge');
+      if (srcVal === 'auto') {
+        badge.innerText = 'Auto-Detecting';
+        detectScript(promptText.value);
+      } else {
+        badge.innerText = srcVal.toUpperCase();
+      }
+    }
+
+    function onTargetLanguageChanged() {
+      const tgtSelect = document.getElementById('tgtLangSelect');
+      const tgtVal = tgtSelect.value;
+      const selectedOption = tgtSelect.options[tgtSelect.selectedIndex];
+      const optgroup = selectedOption.parentElement;
+      const catLabel = optgroup ? optgroup.label : 'Target';
+
+      const shortCat = catLabel.split(' ')[0] + ' ' + (catLabel.split(' ')[1] || '');
+      document.getElementById('tgtCategoryBadge').innerText = shortCat;
+      document.getElementById('targetLangBadge').innerText = selectedOption.innerText;
+      targetLangExplicitlyChanged = true;
+      if (lastTranslatedTargetLang && lastTranslatedTargetLang !== tgtVal) {
+        lastTranslatedTargetLang = '';
+      }
+
+      // Sync legacy select and neural target language selector
+      const legacySelect = document.getElementById('multilingualSelect');
+      if (legacySelect) legacySelect.value = tgtVal;
+      const neuralTgt = document.getElementById('neuralTargetLangSelect');
+      if (neuralTgt && neuralTgt.querySelector(`option[value="${tgtVal}"]`)) {
+        neuralTgt.value = tgtVal;
+      }
+    }
+
+    function onNeuralTargetLangChanged() {
+      const neuralTgt = document.getElementById('neuralTargetLangSelect');
+      if (!neuralTgt) return;
+      const val = neuralTgt.value;
+      if (val && val !== 'auto') {
+        const tgtSelect = document.getElementById('tgtLangSelect');
+        if (tgtSelect && tgtSelect.querySelector(`option[value="${val}"]`)) {
+          tgtSelect.value = val;
+          onTargetLanguageChanged();
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Image-Based Text Extraction & Translation (OCR)
+    // -------------------------------------------------------------
+    let currentInputMode = 'text';
+    let selectedOcrFile = null;
+    let lastExtractedOcrText = '';
+
+    function setInputMode(mode) {
+      currentInputMode = mode;
+      const tabText = document.getElementById('tabModeText');
+      const tabOcr = document.getElementById('tabModeOcr');
+      const ocrSec = document.getElementById('ocrSection');
+      const promptLabel = document.getElementById('promptLabelText');
+
+      if (tabText) tabText.classList.toggle('active', mode === 'text');
+      if (tabOcr) tabOcr.classList.toggle('active', mode === 'ocr');
+
+      if (ocrSec) {
+        ocrSec.style.display = mode === 'ocr' ? 'flex' : 'none';
+      }
+
+      if (promptLabel) {
+        promptLabel.innerText = mode === 'ocr' ? 'Review & Edit Extracted Text' : 'Content to Write & Translate';
+      }
+    }
+
+    function triggerOcrFileInput(e) {
+      if (e) { e.stopPropagation(); }
+      const input = document.getElementById('ocrFileInput');
+      if (input) input.click();
+    }
+
+    function handleOcrFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        setOcrFile(file);
+      }
+    }
+
+    function handleOcrDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dz = document.getElementById('ocrDropZone');
+      if (dz) dz.classList.add('dragover');
+    }
+
+    function handleOcrDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dz = document.getElementById('ocrDropZone');
+      if (dz) dz.classList.remove('dragover');
+    }
+
+    function handleOcrDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dz = document.getElementById('ocrDropZone');
+      if (dz) dz.classList.remove('dragover');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        setOcrFile(e.dataTransfer.files[0]);
+      }
+    }
+
+    function setOcrFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file (JPG, PNG, WEBP, etc.)');
+        return;
+      }
+      selectedOcrFile = file;
+
+      const empty = document.getElementById('ocrDropEmpty');
+      const active = document.getElementById('ocrDropActive');
+      const previewImg = document.getElementById('ocrPreviewImg');
+      const fileNameEl = document.getElementById('ocrFileName');
+      const fileSizeEl = document.getElementById('ocrFileSize');
+      const statusBanner = document.getElementById('ocrStatusBanner');
+
+      if (fileNameEl) fileNameEl.innerText = file.name;
+      if (fileSizeEl) fileSizeEl.innerText = `${(file.size / 1024).toFixed(1)} KB`;
+      if (statusBanner) statusBanner.style.display = 'none';
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (previewImg) previewImg.src = ev.target.result;
+        if (empty) empty.style.display = 'none';
+        if (active) active.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearOcrImage(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      selectedOcrFile = null;
+      const fileInput = document.getElementById('ocrFileInput');
+      if (fileInput) fileInput.value = '';
+
+      const empty = document.getElementById('ocrDropEmpty');
+      const active = document.getElementById('ocrDropActive');
+      const previewImg = document.getElementById('ocrPreviewImg');
+      const statusBanner = document.getElementById('ocrStatusBanner');
+
+      if (empty) empty.style.display = 'flex';
+      if (active) active.style.display = 'none';
+      if (previewImg) previewImg.src = '';
+      if (statusBanner) statusBanner.style.display = 'none';
+    }
+
+    async function performOcrExtraction() {
+      if (!selectedOcrFile) {
+        alert('Please choose or drop an image file first to extract text.');
+        return;
+      }
+
+      const btn = document.getElementById('ocrExtractBtn');
+      const spinner = document.getElementById('ocrSpinner');
+      const btnText = document.getElementById('ocrBtnText');
+      const statusBanner = document.getElementById('ocrStatusBanner');
+      const statusMsg = document.getElementById('ocrStatusMsg');
+      const langHint = document.getElementById('ocrLangSelect') ? document.getElementById('ocrLangSelect').value : 'auto';
+
+      if (btn) btn.disabled = true;
+      if (spinner) spinner.style.display = 'block';
+      if (btnText) btnText.innerText = 'Extracting Text (OCR)...';
+
+      try {
+        const fd = new FormData();
+        fd.append('image', selectedOcrFile);
+        fd.append('language', langHint);
+        fd.append('enhance', 'true');
+
+        const res = await fetch('/api/ocr/extract', { method: 'POST', body: fd });
+        if (!res.ok) {
+          const errText = await res.text();
+          alert('OCR Extraction failed (' + res.status + '): ' + errText);
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.success) {
+          alert('OCR Error: ' + (data.error || 'Failed to extract text from image.'));
+          return;
+        }
+
+        const extracted = (data.text || '').trim();
+        if (!extracted) {
+          alert('No readable text could be detected in this image. Try an image with higher contrast or adjust the language hint.');
+          return;
+        }
+
+        lastExtractedOcrText = extracted;
+
+        // Populate promptText for review and editing
+        promptText.value = extracted;
+        onTextInput();
+
+        // If language detected, sync source language selector
+        if (data.detectedLanguage && data.detectedLanguage !== 'auto') {
+          const srcSelect = document.getElementById('srcLangSelect');
+          if (srcSelect && srcSelect.querySelector(`option[value="${data.detectedLanguage}"]`)) {
+            srcSelect.value = data.detectedLanguage;
+            onSourceLanguageChanged();
+          }
+        }
+
+        // Show status banner
+        if (statusBanner && statusMsg) {
+          const langDisplay = data.detectedLanguageName || (data.detectedLanguage || 'auto').toUpperCase();
+          const confPercent = Math.round((data.confidence || 0.85) * 100);
+          statusMsg.innerText = `Extracted ${data.wordCount || 0} words (${data.lineCount || 1} lines) · Script: ${data.detectedScript || 'Auto'} · Lang: ${langDisplay} (${confPercent}% Conf)`;
+          statusBanner.style.display = 'flex';
+        }
+
+        // Smooth scroll to the editable textarea so user can review/edit
+        promptText.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      } catch (err) {
+        alert('OCR Processing error: ' + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+        if (btnText) btnText.innerText = '🔍 Extract Text from Image (OCR)';
+      }
+    }
+
+    function copyOcrExtractedText() {
+      const textToCopy = lastExtractedOcrText || promptText.value;
+      if (textToCopy) {
+        navigator.clipboard.writeText(textToCopy);
+        const statusMsg = document.getElementById('ocrStatusMsg');
+        if (statusMsg) {
+          const original = statusMsg.innerText;
+          statusMsg.innerText = '✓ Text Copied to Clipboard!';
+          setTimeout(() => { statusMsg.innerText = original; }, 1600);
+        }
+      }
+    }
+
+    // AI-Powered Multilingual Translation Execution
+    async function performTranslation(overrideTargetLang) {
+      const text = promptText.value.trim();
+      if (!text) {
+        alert('Please enter some content to translate in the "Content to Write" field.');
+        return null;
+      }
+
+      const btn = document.getElementById('translateBtn');
+      const spinner = document.getElementById('transSpinner');
+      const btnText = document.getElementById('transBtnText');
+      const sideBySide = document.getElementById('translationSideBySideContainer');
+      const genTransBtn = document.getElementById('generateBtn') || document.getElementById('generateFromTranslationBtn');
+
+      if (btn) btn.disabled = true;
+      if (spinner) spinner.style.display = 'block';
+      if (btnText) btnText.innerText = 'Translating with NLP...';
+
+      const srcLangEl = document.getElementById('srcLangSelect');
+      const srcLang = srcLangEl ? srcLangEl.value : 'auto';
+      const tgtSelect = document.getElementById('tgtLangSelect');
+      const tgtLang = (typeof overrideTargetLang === 'string' && overrideTargetLang)
+        ? overrideTargetLang
+        : (tgtSelect ? tgtSelect.value : 'ta');
+      const modelEl = document.getElementById('translationModelSelect');
+      const modelVal = modelEl ? modelEl.value : 'auto';
+
+      try {
+        const fd = new FormData();
+        fd.append('text', text);
+        fd.append('sourceLanguage', srcLang);
+        fd.append('targetLanguage', tgtLang);
+        if (modelVal !== 'auto') {
+          fd.append('preferredModel', modelVal);
+        }
+
+        const res = await fetch('/api/translate', { method: 'POST', body: fd });
+        if (!res.ok) {
+          const errText = await res.text();
+          alert('Translation failed (' + res.status + '): ' + errText);
+          return null;
+        }
+
+        const data = await res.json();
+
+        // Update Left Panel: Original Content
+        const origBox = document.getElementById('originalDisplayBox');
+        if (origBox) origBox.value = text;
+        const origCount = document.getElementById('origCharCount');
+        if (origCount) origCount.innerText = `${text.length} chars`;
+        const detectedName = data.detectedSourceLanguage ? data.detectedSourceLanguage.toUpperCase() : 'Detected';
+        if (data.detectedSourceLanguage) {
+          lastDetectedLang = data.detectedSourceLanguage;
+        }
+        const srcBadge = document.getElementById('sourceLangBadge');
+        if (srcBadge) srcBadge.innerText = `${detectedName} (Original)`;
+        const scriptNote = document.getElementById('detectedScriptNote');
+        if (scriptNote) scriptNote.innerText = `Source: ${data.detectedSourceLanguage || srcLang}`;
+
+        // Update Right Panel: AI Translated Content
+        const translatedValue = data.translatedText || '';
+        const transTextarea = document.getElementById('translatedText');
+        if (transTextarea) transTextarea.value = translatedValue;
+        const transCount = document.getElementById('transCharCount');
+        if (transCount) transCount.innerText = `${translatedValue.length} chars`;
+        const tgtBadge = document.getElementById('targetLangBadge');
+        if (tgtBadge) tgtBadge.innerText = `${data.targetLanguageName || tgtLang} — ${data.targetNativeName || ''}`;
+        const modelBadge = document.getElementById('transModelBadge');
+        if (modelBadge) modelBadge.innerText = data.modelUsed || 'AI4Bharat / NLLB-200';
+        const timeBadge = document.getElementById('transTimeBadge');
+        if (timeBadge) timeBadge.innerText = `⚡ ${data.executionTime || 0.2}s`;
+
+        lastTranslatedSourceText = text;
+        lastTranslatedTargetLang = tgtLang;
+        targetLangExplicitlyChanged = true;
+        const neuralTgt = document.getElementById('neuralTargetLangSelect');
+        if (neuralTgt && neuralTgt.querySelector(`option[value="${tgtLang}"]`)) {
+          neuralTgt.value = tgtLang;
+        }
+
+        // Confidence badge styling
+        const confBadge = document.getElementById('transConfidenceBadge');
+        if (confBadge) {
+          confBadge.innerText = data.confidenceLevel || 'High confidence';
+          confBadge.className = 'confidence-pill';
+          if (data.confidenceLevel === 'Unsupported') {
+            confBadge.classList.add('unsupported');
+          } else if (data.isLowResource || (data.confidenceLevel && data.confidenceLevel.includes('Low-Resource'))) {
+            confBadge.classList.add('low');
+          } else {
+            confBadge.classList.add('high');
+          }
+        }
+
+        // Show side-by-side container and generation button safely
+        if (sideBySide) {
+          sideBySide.style.display = 'grid';
+        }
+        if (genTransBtn) {
+          genTransBtn.style.display = 'flex';
+          genTransBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        if (data.notes && data.confidenceLevel === 'Unsupported') {
+          alert('Note: ' + data.notes);
+        }
+
+        return data;
+
+      } catch (err) {
+        alert('Translation error: ' + err.message);
+        return null;
+      } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+        if (btnText) btnText.innerText = '🌐 Translate Content (AI NLP)';
+      }
+    }
+
+    function onTranslatedTextInput() {
+      const transText = document.getElementById('translatedText').value;
+      document.getElementById('transCharCount').innerText = `${transText.length} chars`;
+      if (promptText) {
+        lastTranslatedSourceText = promptText.value.trim();
+        const tgtSelect = document.getElementById('tgtLangSelect');
+        if (tgtSelect) lastTranslatedTargetLang = tgtSelect.value;
+      }
+    }
+
+    function copyOriginalText() {
+      const val = document.getElementById('originalDisplayBox').value;
+      if (val) {
+        navigator.clipboard.writeText(val);
+        const b = document.getElementById('sourceLangBadge');
+        const orig = b.innerText;
+        b.innerText = '✓ Copied!';
+        setTimeout(() => { b.innerText = orig; }, 1500);
+      }
+    }
+
+    function copyTranslatedText() {
+      const val = document.getElementById('translatedText').value;
+      if (val) {
+        navigator.clipboard.writeText(val);
+        const b = document.getElementById('targetLangBadge');
+        const orig = b.innerText;
+        b.innerText = '✓ Copied!';
+        setTimeout(() => { b.innerText = orig; }, 1500);
+      }
+    }
+
+    function swapTranslationLanguages() {
+      const srcSelect = document.getElementById('srcLangSelect');
+      const tgtSelect = document.getElementById('tgtLangSelect');
+      const prevSrc = srcSelect.value;
+      const prevTgt = tgtSelect.value;
+
+      // Swap target into source
+      if (srcSelect.querySelector(`option[value="${prevTgt}"]`)) {
+        srcSelect.value = prevTgt;
+      } else {
+        srcSelect.value = 'auto';
+      }
+
+      // Swap previous source into target if known
+      if (prevSrc !== 'auto' && tgtSelect.querySelector(`option[value="${prevSrc}"]`)) {
+        tgtSelect.value = prevSrc;
+      }
+
+      // Swap text
+      const currentTrans = document.getElementById('translatedText').value;
+      if (currentTrans) {
+        promptText.value = currentTrans;
+        onTextInput();
+      }
+
+      onSourceLanguageChanged();
+      onTargetLanguageChanged();
+      performTranslation();
+    }
+
+    function regenerateTranslation() {
+      performTranslation();
+    }
+
+    async function resolveTextAndLangForRender(desiredTargetLang) {
+      const origText = promptText ? promptText.value.trim() : '';
+      if (!origText) return { text: '', targetLang: desiredTargetLang };
+
+      if (!desiredTargetLang || desiredTargetLang === 'auto') {
+        return { text: origText, targetLang: 'auto' };
+      }
+
+      const transEl = document.getElementById('translatedText');
+      const transText = transEl ? transEl.value.trim() : '';
+      if (transText && lastTranslatedSourceText === origText && lastTranslatedTargetLang === desiredTargetLang) {
+        return { text: transText, targetLang: desiredTargetLang };
+      }
+
+      // Detect current input script/language synchronously before deciding whether to translate
+      let detectedLang = lastDetectedLang;
+      try {
+        const dfd = new FormData();
+        dfd.append('text', origText);
+        const dRes = await fetch('/api/multilingual/detect', { method: 'POST', body: dfd });
+        if (dRes.ok) {
+          const dData = await dRes.json();
+          if (dData && dData.primary_language) {
+            detectedLang = dData.primary_language;
+            lastDetectedLang = detectedLang;
+          }
+        }
+      } catch (e) {
+        console.warn('Pre-render script detection failed:', e);
+      }
+
+      if (detectedLang && detectedLang !== desiredTargetLang) {
+        const transResult = await performTranslation(desiredTargetLang);
+        if (transResult && transResult.translatedText && transResult.translatedText.trim()) {
+          return { text: transResult.translatedText.trim(), targetLang: desiredTargetLang };
+        }
+      }
+
+      return { text: origText, targetLang: desiredTargetLang };
+    }
+
+    async function renderHandwritingOnPage() {
+      const origText = promptText ? promptText.value.trim() : '';
+      if (!origText) {
+        alert('Please enter some content to write or translate.');
+        return;
+      }
+
+      if (currentEngine === 'multilingual') {
+        const tgtLang = document.getElementById('tgtLangSelect') ? document.getElementById('tgtLangSelect').value : 'ta';
+        const resolved = await resolveTextAndLangForRender(tgtLang);
+        await generateHandwriting(resolved.text, resolved.targetLang);
+      } else if (currentEngine === 'neural') {
+        const neuralTgtEl = document.getElementById('neuralTargetLangSelect');
+        const neuralTgt = neuralTgtEl ? neuralTgtEl.value : 'auto';
+        const resolved = await resolveTextAndLangForRender(neuralTgt);
+        await generateHandwriting(resolved.text, resolved.targetLang);
+      } else {
+        const tgtLang = document.getElementById('tgtLangSelect') ? document.getElementById('tgtLangSelect').value : 'auto';
+        const transEl = document.getElementById('translatedText');
+        const transText = transEl ? transEl.value.trim() : '';
+        if (transText && lastTranslatedSourceText === origText && lastTranslatedTargetLang === tgtLang) {
+          await generateHandwriting(transText, tgtLang);
+        } else {
+          await generateHandwriting();
+        }
+      }
+    }
+
+    function generateHandwrittenTranslation() {
+      renderHandwritingOnPage();
+    }
+
+    // Main Generation Handler
+    async function generateHandwriting(overrideText, overrideLang) {
+      const text = overrideText !== undefined ? overrideText.trim() : promptText.value.trim();
+      if (!text) {
+        alert('Please enter some text to write.');
+        return;
+      }
+
+      const btn = document.getElementById('generateBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+      const elapsed = document.getElementById('elapsedTime');
+
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      btnText.innerText = 'Writing handwriting...';
+      const startTime = Date.now();
+      const timer = setInterval(() => {
+        elapsed.innerText = `Writing: ${((Date.now() - startTime) / 1000).toFixed(1)}s`;
+      }, 50);
+
+      try {
+        const fontSizeVal = document.getElementById('fontSizeSlider') ? document.getElementById('fontSizeSlider').value : '36';
+
+        if (currentEngine === 'multilingual') {
+          const fd = new FormData();
+          fd.append('text', text);
+          const activeLang = overrideLang !== undefined
+            ? overrideLang
+            : (document.getElementById('tgtLangSelect') ? document.getElementById('tgtLangSelect').value : document.getElementById('multilingualSelect').value);
+          fd.append('language', activeLang);
+          fd.append('font_family', document.getElementById('fontFamilySelect').value);
+          fd.append('paper_type', document.getElementById('multiPaperSelect').value);
+          fd.append('font_size', fontSizeVal);
+
+          // Slant & stroke overrides if adjusted
+          const slantVal = parseFloat(document.getElementById('slantSlider').value);
+          if (!isNaN(slantVal)) fd.append('slant_override', slantVal);
+
+          const strokeVal = parseFloat(document.getElementById('strokeSlider').value);
+          if (!isNaN(strokeVal)) fd.append('stroke_override', strokeVal);
+
+          const inkSelectVal = document.getElementById('multiInkSelect').value;
+          if (inkSelectVal !== 'auto') {
+            fd.append('ink_color_override', inkSelectVal);
+          }
+
+          // Attach uploaded reference images or reuse previously uploaded reference
+          if (uploadedReferenceFiles.length > 0) {
+            uploadedReferenceFiles.forEach(f => fd.append('style_files', f));
+          } else if (lastUploadedReferenceFilename) {
+            fd.append('reference_filename', lastUploadedReferenceFilename);
+          }
+
+          const res = await fetch('/api/multilingual/generate', { method: 'POST', body: fd });
+          if (!res.ok) {
+            clearInterval(timer);
+            elapsed.innerText = 'Failed';
+            const errText = await res.text();
+            alert('Server generation error (' + res.status + '): ' + errText);
+            return;
+          }
+          const data = await res.json();
+          clearInterval(timer);
+          const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+          elapsed.innerText = `Completed in ${duration}s`;
+
+          if (!data.success) {
+            alert('Generation error: ' + (data.error || 'Failed to render'));
+            return;
+          }
+
+          displayMultilingualResults(data, duration);
+
+        } else if (currentEngine === 'notebook') {
+          // Ruled Notebook mode
+          const fd = new FormData();
+          fd.append('text', text);
+          fd.append('engine', 'notebook');
+          fd.append('notebook_style', document.getElementById('styleSelect').value);
+          fd.append('ink_color', document.getElementById('inkSelect').value);
+          fd.append('paper_type', document.getElementById('paperSelect').value);
+          fd.append('judge', 'false');
+
+          if (uploadedReferenceFiles.length > 0) {
+            fd.append('style', uploadedReferenceFiles[0]);
+          } else if (lastUploadedReferenceFilename) {
+            fd.append('reference_filename', lastUploadedReferenceFilename);
+          }
+
+          const res = await fetch('/api/generate', { method: 'POST', body: fd });
+          const data = await res.json();
+          clearInterval(timer);
+          const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+          elapsed.innerText = `Completed in ${duration}s`;
+          displayLegacyResults(data, duration);
+
+        } else {
+          // Neural HWT mode
+          const fd = new FormData();
+          fd.append('text', text);
+          fd.append('engine', document.getElementById('neuralEngineSelect').value);
+          fd.append('paper_type', document.getElementById('multiPaperSelect') ? document.getElementById('multiPaperSelect').value : 'ruled');
+          fd.append('ink_color', document.getElementById('multiInkSelect') ? document.getElementById('multiInkSelect').value : 'blue');
+          fd.append('font_size', fontSizeVal);
+          fd.append('judge', 'true');
+          const slantVal = document.getElementById('slantSlider') ? parseFloat(document.getElementById('slantSlider').value) : NaN;
+          if (!isNaN(slantVal)) fd.append('slant_override', slantVal);
+          const strokeVal = document.getElementById('strokeSlider') ? parseFloat(document.getElementById('strokeSlider').value) : NaN;
+          if (!isNaN(strokeVal)) fd.append('stroke_override', strokeVal);
+          const neuralTgt = overrideLang !== undefined
+            ? overrideLang
+            : (document.getElementById('neuralTargetLangSelect') ? document.getElementById('neuralTargetLangSelect').value : 'auto');
+          if (neuralTgt && neuralTgt !== 'auto') {
+            fd.append('target_language', neuralTgt);
+            const srcLangEl = document.getElementById('srcLangSelect');
+            if (srcLangEl) fd.append('source_language', srcLangEl.value);
+          }
+
+          if (uploadedReferenceFiles.length > 0) {
+            fd.append('style', uploadedReferenceFiles[0]);
+          } else if (lastUploadedReferenceFilename) {
+            fd.append('reference_filename', lastUploadedReferenceFilename);
+          }
+
+          const res = await fetch('/api/generate', { method: 'POST', body: fd });
+          const data = await res.json();
+          clearInterval(timer);
+          const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+          elapsed.innerText = `Completed in ${duration}s`;
+          displayLegacyResults(data, duration);
+        }
+      } catch (err) {
+        clearInterval(timer);
+        elapsed.innerText = 'Failed';
+        alert('Request failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.innerText = currentEngine === 'multilingual'
+          ? '✍️ Render Handwritten Translation on Notebook Page'
+          : (currentEngine === 'notebook' ? '✨ Render Ruled Notebook Copy' : '⚡ Run Neural Model');
+      }
+    }
+
+    function switchResultView(mode) {
+      activeResultView = mode;
+      document.getElementById('btnViewSplit').classList.toggle('active', mode === 'split');
+      document.getElementById('btnViewSingle').classList.toggle('active', mode === 'single');
+      document.getElementById('splitViewContainer').style.display = mode === 'split' ? 'grid' : 'none';
+      document.getElementById('singleViewContainer').style.display = mode === 'single' ? 'block' : 'none';
+      document.getElementById('viewHint').innerText = mode === 'split'
+        ? 'Side-by-side: Target reference style vs synthesized handwritten output'
+        : 'Full handwritten page view';
+    }
+
+    function openFullscreenImg(el) {
+      if (el && el.src) {
+        window.open(el.src, '_blank');
+      }
+    }
+
+    function displayMultilingualResults(data, duration) {
+      document.getElementById('emptyState').style.display = 'none';
+      const container = document.getElementById('resultContainer');
+      container.style.display = 'flex';
+
+      // Update both Single and Split images
+      const img = document.getElementById('generatedImg');
+      const imgSplit = document.getElementById('generatedImgSplit');
+      img.src = data.image_url;
+      imgSplit.src = data.image_url;
+
+      // Update download and full links
+      document.getElementById('downloadBtn').href = data.image_url;
+      document.getElementById('openFullBtn').href = data.image_url;
+      document.getElementById('downloadBtnSplit').href = data.image_url;
+      document.getElementById('openFullBtnSplit').href = data.image_url;
+
+      // Update Reference Image for side-by-side view
+      const refImg = document.getElementById('referenceImg');
+      const targetRefUrl = data.reference_url || lastUploadedReferenceUrl;
+      if (targetRefUrl) {
+        refImg.src = targetRefUrl;
+        refImg.style.display = 'block';
+        document.getElementById('refMeta').innerText = data.reference_filename || 'Uploaded Target Style';
+      } else {
+        refImg.src = '/static/sample_ref.png';
+        refImg.style.display = 'none';
+      }
+
+      // Transfer Mode Badge
+      const modeBadge = document.getElementById('transferModeBadge');
+      if (data.transfer_mode === 'same_script') {
+        modeBadge.className = 'transfer-badge same-script';
+        modeBadge.innerHTML = '<span>✨</span> Same-Script Replication (' + data.target_script + ')';
+      } else if (data.transfer_mode === 'cross_script') {
+        modeBadge.className = 'transfer-badge cross-script';
+        modeBadge.innerHTML = '<span>🔄</span> Cross-Script Transfer (' + data.target_script + ')';
+      } else {
+        modeBadge.className = 'transfer-badge same-script';
+        modeBadge.innerHTML = '<span>✍️</span> Calibrated Human Synthesis';
+      }
+
+      // Accuracy Badge
+      const accBadge = document.getElementById('accuracyBadge');
+      const accPercent = Math.round((data.accuracy_score || 1.0) * 100);
+      accBadge.innerHTML = `✓ ${accPercent}% Text Accuracy`;
+      accBadge.style.color = accPercent >= 98 ? '#10b981' : '#f59e0b';
+
+      // Style Similarity Badge (scientific measured score)
+      const simBadge = document.getElementById('styleSimBadge');
+      if (simBadge) {
+        const simPercent = Math.round((data.style_similarity_score || 0.92) * 100);
+        simBadge.innerHTML = `🎯 ${simPercent}% Style Match`;
+        simBadge.style.display = 'inline-flex';
+      }
+
+      // Scientific Transfer Notes
+      document.getElementById('transferNotesBar').innerText = data.transfer_notes || data.validation_summary || 'Style replicated successfully.';
+
+      // Bottom Bar Stats
+      document.getElementById('speedStat').innerText = `⚡ ${duration}s`;
+      document.getElementById('langStat').innerText = `Lang: ${data.target_language.toUpperCase()} (${data.target_script})`;
+      document.getElementById('strokeStat').innerText = `Pen: ${data.style_profile ? data.style_profile.stroke_thickness.toFixed(1) : '2.8'}px`;
+      document.getElementById('cardMeta').innerText = `A4 NOTEBOOK — ${data.target_script.toUpperCase()} SCRIPT`;
+    }
+
+    function displayLegacyResults(data, duration) {
+      document.getElementById('emptyState').style.display = 'none';
+      const container = document.getElementById('resultContainer');
+      container.style.display = 'flex';
+
+      const img = document.getElementById('generatedImg');
+      const imgSplit = document.getElementById('generatedImgSplit');
+      img.src = data.image_url;
+      imgSplit.src = data.image_url;
+
+      document.getElementById('downloadBtn').href = data.image_url;
+      document.getElementById('openFullBtn').href = data.image_url;
+      document.getElementById('downloadBtnSplit').href = data.image_url;
+      document.getElementById('openFullBtnSplit').href = data.image_url;
+
+      // Update Reference Image for side-by-side view
+      const refImg = document.getElementById('referenceImg');
+      const targetRefUrl = data.reference_url || lastUploadedReferenceUrl;
+      if (targetRefUrl) {
+        refImg.src = targetRefUrl;
+        refImg.style.display = 'block';
+        document.getElementById('refMeta').innerText = data.reference_filename || 'Uploaded Target Style';
+      } else {
+        refImg.style.display = 'none';
+      }
+
+      const modeBadge = document.getElementById('transferModeBadge');
+      if (data.engine === 'hwt') {
+        modeBadge.className = 'transfer-badge cross-script';
+        modeBadge.innerHTML = '<span>🤖</span> Neural HWT on Ruled Copy';
+      } else {
+        modeBadge.className = 'transfer-badge same-script';
+        modeBadge.innerHTML = '<span>📓</span> Notebook Ruled Engine';
+      }
+
+      const accBadge = document.getElementById('accuracyBadge');
+      const accPercent = Math.round((data.accuracy_score || 1.0) * 100);
+      accBadge.innerHTML = `✓ ${accPercent}% Text Accuracy`;
+
+      const simBadge = document.getElementById('styleSimBadge');
+      if (simBadge) {
+        const simPercent = Math.round((data.style_similarity_score || 0.88) * 100);
+        simBadge.innerHTML = `🎯 ${simPercent}% Style Match`;
+        simBadge.style.display = 'inline-flex';
+      }
+
+      document.getElementById('transferNotesBar').innerText = data.engine === 'hwt'
+        ? `Neural HWT generated authentic handwriting conditioned on reference style in ${duration}s.`
+        : `Ruled notebook copy generated in ${duration}s.`;
+
+      document.getElementById('speedStat').innerText = `⚡ ${duration}s`;
+      document.getElementById('langStat').innerText = data.target_language
+        ? `Lang: ${data.target_language.toUpperCase()}${data.target_script ? ' (' + data.target_script + ')' : ''}`
+        : `Style: ${data.style || 'Kalam'}`;
+      document.getElementById('strokeStat').innerText = `Ink: ${(data.ink || 'blue').toUpperCase()}`;
+      document.getElementById('cardMeta').innerText = `NOTEBOOK COPY (${data.paper ? data.paper.toUpperCase() : 'RULED'})`;
+    }
+
+    function openFullscreen() {
+      const img = document.getElementById('generatedImg');
+      if (img.src) {
+        window.open(img.src, '_blank');
+      }
+    }
+  </script>
+</body>
+
+</html>
